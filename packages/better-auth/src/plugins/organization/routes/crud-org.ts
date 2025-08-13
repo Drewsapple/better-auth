@@ -416,10 +416,54 @@ export const updateOrganization = <O extends OrganizationOptions>(
 						ORGANIZATION_ERROR_CODES.YOU_ARE_NOT_ALLOWED_TO_UPDATE_THIS_ORGANIZATION,
 				});
 			}
+			const previousOrg = await adapter.findOrganizationById(organizationId);
+			if (!previousOrg) {
+				throw new APIError("BAD_REQUEST", {
+					message: ORGANIZATION_ERROR_CODES.ORGANIZATION_NOT_FOUND,
+				});
+			}
+
+			let updates: Partial<InferOrganization<O>> & { [key: string]: any } =
+				ctx.body.data;
+
+			if (options.organizationUpdate?.beforeUpdate) {
+				const result = await options.organizationUpdate.beforeUpdate(
+					{
+						previous: previousOrg,
+						updates,
+						user: session.user,
+					},
+					ctx.request,
+				);
+				if (result && typeof result === "object" && "data" in result) {
+					updates = { ...updates, ...result.data };
+					Object.keys(updates).forEach((key) => {
+						if (updates[key] === undefined) delete updates[key];
+					});
+				}
+			}
+
 			const updatedOrg = await adapter.updateOrganization(
 				organizationId,
-				ctx.body.data,
+				updates,
 			);
+
+			if (!updatedOrg) {
+				throw new APIError("BAD_REQUEST", {
+					message: ORGANIZATION_ERROR_CODES.ORGANIZATION_NOT_FOUND,
+				});
+			}
+			if (options.organizationUpdate?.afterUpdate) {
+				await options.organizationUpdate.afterUpdate(
+					{
+						previous: previousOrg,
+						updated: updatedOrg,
+						user: session.user,
+					},
+					ctx.request,
+				);
+			}
+
 			return ctx.json(updatedOrg);
 		},
 	);

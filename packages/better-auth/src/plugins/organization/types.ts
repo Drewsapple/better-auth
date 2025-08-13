@@ -334,6 +334,24 @@ export interface OrganizationOptions {
 			request?: Request,
 		) => Promise<void>;
 	};
+	organizationUpdate?: {
+		beforeUpdate?: (
+			data: {
+				previous: Organization;
+				updates: Partial<Organization> & Record<string, any>;
+				user: User;
+			},
+			request?: Request,
+		) => Promise<void | { data: Record<string, any> }>;
+		afterUpdate?: (
+			data: {
+				previous: Organization & Record<string, any>;
+				updated: Organization & Record<string, any>;
+				user: User;
+			},
+			request?: Request,
+		) => Promise<void>;
+	};
 	/**
 	 * Automatically create an organization for the user on sign up.
 	 *
