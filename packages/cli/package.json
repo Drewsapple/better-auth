@@ -1,6 +1,6 @@
 {
   "name": "@better-auth/cli",
-  "version": "1.3.6-org-metadata-optional-stringify.0",
+  "version": "1.3.6-org-metadata-optional-stringify.1",
   "description": "The CLI for Better Auth",
   "module": "dist/index.mjs",
   "repository": {
